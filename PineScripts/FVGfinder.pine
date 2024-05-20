@@ -1,0 +1,13 @@
+//@version=5
+indicator(title="Fair value gap finder", shorttitle="FVG",  overlay=true)
+
+lastBar = low
+BeforeGap = high[2]
+
+gap = lastBar - BeforeGap
+plot = gap >= 0.005
+
+plotshape(plot, style=shape.triangleup, location=location.belowbar, color=color.new(#00ff37, 0), size=size.small)
+
+
+
