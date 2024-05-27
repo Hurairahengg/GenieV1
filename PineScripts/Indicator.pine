@@ -1,12 +1,12 @@
 //@version=5
 indicator(title = "Trend indicator", shorttitle="CM_EMA TrendBars",overlay=true, timeframe = "", timeframe_gaps = true)
-ema1 = input(17, title="EMA UpTrend")
+ema1 = input(20, title="EMA UpTrend")
 shema = input(true, title="Show EMA Trend is Based On?")
 
 usedEma = ta.ema(close, ema1)
 
-atrPeriod = input.int(27,"ATR Length", minval = 1)
-factor =    input.float(2.40,"Factor",     minval = 0.01, step = 0.01)
+atrPeriod = input.int(10,"ATR Length", minval = 1)
+factor =    input.float(1.75,"Factor",     minval = 0.01, step = 0.01)
 
 emaUpColor = ta.crossover(hlc3, usedEma)
 emaDownColor = ta.crossunder(hlc3, usedEma)
