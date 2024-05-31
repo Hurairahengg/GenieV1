@@ -1,23 +1,36 @@
 //@version=5
-indicator(title = "Trend indicator", shorttitle="CM_EMA TrendBars",overlay=true, timeframe = "", timeframe_gaps = true)
+indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true, timeframe = "", timeframe_gaps = true)
+
 ema1 = input(20, title="EMA UpTrend")
 shema = input(true, title="Show EMA Trend is Based On?")
+atrPeriod = input.int(10, "ATR Length", minval = 1)
+factor = input.float(4.0, "Factor", minval = 0.01, step = 0.01)
 
 usedEma = ta.ema(close, ema1)
-
-atrPeriod = input.int(10,"ATR Length", minval = 1)
-factor =    input.float(1.75,"Factor",     minval = 0.01, step = 0.01)
-
-emaUpColor = ta.crossover(hlc3, usedEma)
-emaDownColor = ta.crossunder(hlc3, usedEma)
-
 [supertrend, direction] = ta.supertrend(factor, atrPeriod)
 
-buy = (hlc3 >= usedEma) and (direction[1] > direction) 
-buyDown = (hlc3 < usedEma) and (direction[1] < direction)
+var upCount = 0
+var downCount = 0
 
-plotshape(buy, location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, title="Uptrend Signal")
-plotshape(buyDown, location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, title="Downtrend Signal")
+isUpTrend = direction < 0 and direction[1] >= 0
+isDownTrend = direction > 0 and direction[1] <= 0
 
-alertcondition(buy, title='buy', message='{"action": "buy", "close": "{{close}}", "time": "{{time}}"}')
-alertcondition(buyDown, title='sell', message='{"action": "sell", "close": "{{close}}", "time": "{{time}}"}')
+if (hlc3 >= usedEma)
+    upCount := upCount + 1 
+    downCount := 0
+
+if (hlc3 < usedEma)
+    downCount := downCount + 1
+    upCount := 0
+
+emaUp = upCount >= 2
+emaDown = downCount >= 2
+
+buy = emaUp and isUpTrend
+sell = emaDown and isDownTrend
+closePosition = (upCount == 1 and direction > 0) or (downCount == 1 and direction < 0) 
+
+plotshape(buy, style=shape.triangleup, location=location.belowbar, color=color.green, size=size.small, title="Buy")
+plotshape(sell, style=shape.triangledown, location=location.abovebar, color=color.red, size=size.small, title="Sell")
+plotshape(closePosition, style=shape.triangledown, location=location.abovebar, color=color.purple, size=size.small, title="Sell")
+
