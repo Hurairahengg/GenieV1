@@ -6,9 +6,9 @@ i will firstly go for daytrading since its easier to automate. i am expecting my
 10000 yen or $100
 </p>
 
-### Forex pair in use is: AUD/USD, USD/JPY
+### Forex pair in use is: AUD/USD, USD/JPY, GBP/JPY
 ---
-### Broker in use: IBKR (interactive broker)
+### Broker in use: Forex.com (test account)
 ---
 ### API: N/A
 ---
