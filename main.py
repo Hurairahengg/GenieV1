@@ -5,13 +5,22 @@ from modules.webhook import EmailChecker as ec
 from modules.trader import trade 
 
 def dataHandler(data):
-    data = rawData.split()
-    action = data[0]
+    newAction = None
+    if data is not None:
+        action = data.split()
+        newAction = trade(action[0])
+        return action
+    else: 
+        pass
     
-    crrncapital, positions, downposition = trade(action, crrncapital, positions, downposition)
+    
+    
+    return newAction
     
 while True:
-    email_checker = ec()  # Create an instance of EmailChecker
-    rawData = email_checker.checkemail()  # Call the method on the instance
-    dataHandler(rawData)
+    email_checker = ec()  
+    data = email_checker.checkemail()  
+    newAction = dataHandler(data)
+
+    
 
