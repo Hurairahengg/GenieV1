@@ -10,6 +10,6 @@ def log(action):
     }
 
     df = pd.DataFrame(data)
-    df.to_csv('data/data.csv', index=False, mode='w',
+    df.to_csv('data/data.csv', index=False, mode='a',
               header=not pd.io.common.file_exists('data.csv'))
     return time

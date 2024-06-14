@@ -1,6 +1,6 @@
-import json
 from modules.webhook import EmailChecker as ec
 from modules.datahandler import dataHandler
+
 
 while True:
     email_checker = ec()
