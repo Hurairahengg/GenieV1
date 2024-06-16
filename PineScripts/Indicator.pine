@@ -1,80 +1,21 @@
 //@version=5
-indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", format=format.price, overlay=true, precision=2)
+indicator(title="Moving Average Exponential", shorttitle="EMA", overlay=true, timeframe="", timeframe_gaps=true)
+len = input.int(9, minval=1, title="Length")
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
+out = ta.ema(src, len)
+plot(out, title="EMA", color=color.blue, offset=offset)
 
-ema1 = input.int(34, minval=1, maxval=300, title="EMA UpTrend")
-shema = input.bool(true, title="Show EMA Trend is Based On?")
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
 
-len = input.int(200, minval=1, title="Length")
-src1 = input(close, title="Source")
-offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display=display.data_window)
-out = ta.ema(src1, len)
-plot(out, title="EMA", color=#fbff00, offset=offset)
+typeMA = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing", display = display.data_window)
+smoothingLength = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing", display = display.data_window)
 
-pipDifference = 0.0002
-highUpTrend = (out < close) and (math.abs(out - close) >= pipDifference)
-highDownTrend = (out > close) and (math.abs(out - close) >= pipDifference)
-
-var int upEMA = 0
-var int downEMA = 0
-
-Periods = input.int(title="ATR Period", defval=10)
-src = input(hl2, title="Source")
-Multiplier = input.float(title="ATR Multiplier", step=0.1, defval=3.25)
-changeATR = input.bool(title="Change ATR Calculation Method ?", defval=true)
-showsignals = input.bool(title="Show Buy/Sell Signals ?", defval=true)
-highlighting = input.bool(title="Highlighter On/Off ?", defval=true)
-
-atr2 = ta.sma(ta.tr, Periods)
-atr = changeATR ? ta.atr(Periods) : atr2
-up = src - (Multiplier * atr)
-up1 = na(up[1]) ? up : up[1]
-up := close[1] > up1 ? math.max(up, up1) : up
-dn = src + (Multiplier * atr)
-dn1 = na(dn[1]) ? dn : dn[1]
-dn := close[1] < dn1 ? math.min(dn, dn1) : dn
-var trend = 1
-trend := na(trend[1]) ? trend : trend[1]
-trend := trend == -1 and close > dn1 ? 1 : trend == 1 and close < up1 ? -1 : trend
-uptrnd = trend == 1 and trend[1] == -1
-downtrnd = trend == -1 and trend[1] == 1
-var bool SuperUP = false
-var bool SuperDOWN = false
-
-usedEma = ta.ema(close, ema1)
-
-emaUp = hlc3 >= usedEma
-emaDown = hlc3 < usedEma
-var int emaCount = 0
-var int emaDCount = 0
-
-if (highUpTrend)
-    upEMA += 1
-    downEMA := 0
-if (highDownTrend)
-    downEMA += 1
-    upEMA := 0
-
-if (emaUp)
-    emaCount += 1
-    emaDCount := 0
-if (emaDown)
-    emaDCount += 1
-    emaCount := 0
-
-if (uptrnd)
-    SuperUP := true
-    SuperDOWN := false
-if (downtrnd)
-    SuperUP := false
-    SuperDOWN := true
-
-buySignal = (emaCount >= 1) and SuperUP and (upEMA >= 1)
-sellSignal = (emaDCount >= 1) and SuperDOWN and (downEMA >= 1) 
-closeBuy = (emaDCount >= 1) and SuperDOWN and (upEMA >= 1)
-closeSell = (emaCount >= 1) and SuperUP and (downEMA >= 1)
-
-plotshape(closeBuy, location=location.belowbar, color=color.blue, style=shape.triangleup, size=size.small, title="Close Buy Signal")
-plotshape(closeSell, location=location.abovebar, color=color.yellow, style=shape.triangledown, size=size.small, title="Close Sell Signal")
-
-plotshape(buySignal, location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, title="Buy Signal")
-plotshape(sellSignal, location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, title="Sell Signal")
+smoothingLine = ma(out, smoothingLength, typeMA)
+plot(smoothingLine, title="Smoothing Line", color=#f37f20, offset=offset, display=display.none)
