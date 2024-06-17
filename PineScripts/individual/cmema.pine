@@ -1,0 +1,18 @@
+//@version=5
+indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
+ema1 = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
+shema = input.bool(true, title="Show EMA Trend is Based On?")
+
+usedEma = ta.ema(close, ema1)
+
+emaUp = hlc3 >= usedEma and (hlc3[1] >= usedEma)
+emaDown = hlc3 < usedEma and (hlc3[1] < usedEma)
+emaUpE = hlc3 >= usedEma and not (hlc3[1] >= usedEma)
+emaDownE = hlc3 < usedEma and not (hlc3[1] < usedEma)
+
+plotshape(series=emaUp, location=location.belowbar, color=color.green, style=shape.triangleup, title="Buy Signal")
+plotshape(series=emaDown, location=location.abovebar, color=color.red, style=shape.triangledown, title="Sell Signal")
+plotshape(series=emaDownE, location=location.belowbar, color=color.green, style=shape.triangleup, title="Buy Signal")
+plotshape(series=emaUpE, location=location.abovebar, color=color.red, style=shape.triangledown, title="Sell Signal")
+
+

@@ -1,21 +1,53 @@
 //@version=5
 indicator(title="Moving Average Exponential", shorttitle="EMA", overlay=true, timeframe="", timeframe_gaps=true)
-len = input.int(9, minval=1, title="Length")
+ema1 = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
+shema = input.bool(true, title="Show EMA Trend is Based On?")
+
+atrPeriod = input.int(10,    "ATR Length", minval = 1)
+factor =    input.float(2.7, "Factor",     minval = 0.01, step = 0.01)
+
+[supertrend, direction] = ta.supertrend(factor, atrPeriod)
+
+usedEma = ta.ema(close, ema1)
+
+// Inputs
+len = input.int(150, minval=1, title="Length")
 src = input(close, title="Source")
 offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
+
+emaUp = hlc3 >= usedEma and (hlc3[1] >= usedEma)
+emaDown = hlc3 < usedEma and (hlc3[1] < usedEma)
+emaUpE = hlc3 >= usedEma and not (hlc3[1] >= usedEma)
+emaDownE = hlc3 < usedEma and not (hlc3[1] < usedEma)
+
+// Calculate the EMA
 out = ta.ema(src, len)
 plot(out, title="EMA", color=color.blue, offset=offset)
 
-ma(source, length, type) =>
-    switch type
-        "SMA" => ta.sma(source, length)
-        "EMA" => ta.ema(source, length)
-        "SMMA (RMA)" => ta.rma(source, length)
-        "WMA" => ta.wma(source, length)
-        "VWMA" => ta.vwma(source, length)
+var bool isBuy = na
+var bool isSell = na
 
-typeMA = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing", display = display.data_window)
-smoothingLength = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing", display = display.data_window)
+// Determine the trend direction
+var bool up = na
+if (ta.crossover((out - 0.0001),close))
+    up := false
+if (ta.crossunder((out - 0.0001),close))
+    up := true
 
-smoothingLine = ma(out, smoothingLength, typeMA)
-plot(smoothingLine, title="Smoothing Line", color=#f37f20, offset=offset, display=display.none)
+var bool trendUp = na
+
+if (direction >= 0)
+    trendUp := false
+if  (direction < 0)
+    trendUp := true
+
+buy = (up and (emaUp or emaDownE) and trendUp)
+sell = ((up == false) and (emaDown or emaUpE) and (trendUp == false))
+
+
+
+// Plot shapes based on the trend
+plotshape(series=buy and not buy[1], location=location.belowbar, color=color.green, style=shape.triangleup,size=size.small, title="Buy Signal")
+plotshape(series=sell and not sell[1], location=location.abovebar, color=color.red, style=shape.triangledown,size=size.small, title="Sell Signal")
+
+

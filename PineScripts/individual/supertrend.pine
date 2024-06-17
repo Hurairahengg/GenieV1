@@ -1,0 +1,17 @@
+//@version=5
+indicator("Supertrend", overlay = true, timeframe = "", timeframe_gaps = true)
+
+atrPeriod = input.int(10,    "ATR Length", minval = 1)
+factor =    input.float(2.7, "Factor",     minval = 0.01, step = 0.01)
+
+[supertrend, direction] = ta.supertrend(factor, atrPeriod)
+
+var bool trendUp = na
+
+if (direction >= 0)
+    trendUp := false
+if  (direction < 0)
+    trendUp := true
+
+plotshape(trendUp, location=location.belowbar, color=color.green, style=shape.triangleup,size=size.small, title="Buy Signal")
+plotshape(trendUp == false, location=location.abovebar, color=color.red, style=shape.triangledown,size=size.small, title="Sell Signal")
