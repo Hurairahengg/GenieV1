@@ -5,27 +5,24 @@ from modules.logger import log
 def dataHandler(data):
     if data is not None:
         action = data.split()
-        cntpos = 1 if action[0] == 'buy' or action[0] == 'sell' else 0
+        cntpos = 1 if action[0] in ['buy', 'sell'] else 0
         
         with open('data/position.json', 'r+') as pos:
             position_data = json.load(pos)
             position = position_data['positions']
-            pos.seek(0)
-              
+            
             if action[0] == 'buy' and position < 1: 
                 trade(action[0])
+                position += cntpos
             elif action[0] == 'sell' and position > 0:
                 trade(action[0])
-            else:
-                return 'You alr got trades open at this time'
-                
-            time = log(action[0])
-            if action[0] == 'buy': 
-                json.dump({'positions': cntpos + position}, pos, indent=4)
-            if action[0] == 'sell': 
-                json.dump({'positions': position - cntpos}, pos, indent=4)     
-                
+                position -= cntpos
+            
+            pos.seek(0)
+            json.dump({'positions': position}, pos, indent=4)
             pos.truncate()
+            
+            time = log(action[0])
             return 'The trade for ' + action[0] + ' has been executed at ' + time
     else:
         pass
