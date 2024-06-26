@@ -5,14 +5,15 @@ shema = input.bool(true, title="Show EMA Trend is Based On?")
 
 usedEma = ta.ema(close, ema1)
 
-emaUp = hlc3 >= usedEma and (hlc3[1] >= usedEma)
-emaDown = hlc3 < usedEma and (hlc3[1] < usedEma)
-emaUpE = hlc3 >= usedEma and not (hlc3[1] >= usedEma)
-emaDownE = hlc3 < usedEma and not (hlc3[1] < usedEma)
+distanceThreshold = 0.010 
+emaUp = hlc3 >= usedEma and math.abs(hlc3 - usedEma) >= distanceThreshold
+emaDown = hlc3 < usedEma and math.abs(hlc3 - usedEma) >= distanceThreshold
+var bool isup = na
 
-plotshape(series=emaUp, location=location.belowbar, color=color.green, style=shape.triangleup, title="Buy Signal")
-plotshape(series=emaDown, location=location.abovebar, color=color.red, style=shape.triangledown, title="Sell Signal")
-plotshape(series=emaDownE, location=location.belowbar, color=color.green, style=shape.triangleup, title="Buy Signal")
-plotshape(series=emaUpE, location=location.abovebar, color=color.red, style=shape.triangledown, title="Sell Signal")
+if emaUp
+    isup := true
+if emaDown
+    isup := false
 
-
+plotshape(series=isup, location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, title="Buy Signal")
+plotshape(series=isup == false, location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, title="Sell Signal")

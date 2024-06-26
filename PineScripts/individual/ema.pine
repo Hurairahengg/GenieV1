@@ -2,7 +2,7 @@
 indicator(title="Moving Average Exponential", shorttitle="EMA", overlay=true, timeframe="", timeframe_gaps=true)
 
 // Inputs
-len = input.int(150, minval=1, title="Length")
+len = input.int(75, minval=1, title="Length")
 src = input(close, title="Source")
 offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
 
@@ -13,11 +13,13 @@ plot(out, title="EMA", color=color.blue, offset=offset)
 
 // Determine the trend direction
 var bool up = na
-if (ta.crossover((out - 0.0001),close))
+
+if (ta.crossover((out),close))
     up := false
-if (ta.crossunder((out - 0.0001),close))
+if (ta.crossunder((out),close))
     up := true
 
 // Plot shapes based on the trend
-plotshape(series=up, location=location.belowbar, color=color.green, style=shape.triangleup, title="Buy Signal")
-plotshape(series=up == false, location=location.abovebar, color=color.red, style=shape.triangledown, title="Sell Signal")
+plotshape(series=up, location=location.belowbar, color=color.green, style=shape.triangleup,size=size.small, title="Buy Signal")
+plotshape(series=up == false, location=location.abovebar, color=color.red, style=shape.triangledown,size=size.small, title="Sell Signal")
+
