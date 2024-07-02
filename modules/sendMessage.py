@@ -18,7 +18,7 @@ async def main(message):
         await bot.send_message(chat_id=chat_id, text=message)
         return 'Message sent successfully!'
     except Exception as e:
-        return 'Failed to send message'
+        return 'Failed to send message no money :sad: '
 
 def send(message):
     loop = asyncio.get_event_loop()

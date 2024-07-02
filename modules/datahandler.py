@@ -20,7 +20,7 @@ def dataHandler(data):
                     if position == 0:
                         trade(action[0])
                         position += cntpos
-                        send(f'The {action[0]} trade has been executed at {current_time}')
+                        send(f'The {action[0]} trade has been executed at \n \n {current_time}')
                         log(action[0])
 
                     elif position < 0:
@@ -29,7 +29,7 @@ def dataHandler(data):
                             position += cntpos
                         trade(action[0])
                         position += cntpos
-                        send(f'The {action[0]} trade has been executed at {current_time}')
+                        send(f'The {action[0]} trade has been executed at \n {current_time}')
                         log(action[0])
 
                     elif position >= 1:
@@ -39,7 +39,7 @@ def dataHandler(data):
                     if position == 0:
                         trade(action[0])
                         position -= cntpos
-                        send(f'The {action[0]} trade has been executed at {current_time}')
+                        send(f'The {action[0]} trade has been executed at \n {current_time}')
                         log(action[0])
 
                     elif position > 0:
@@ -48,7 +48,7 @@ def dataHandler(data):
                             position -= cntpos
                         trade(action[0])
                         position -= cntpos
-                        send(f'The {action[0]} trade has been executed at {current_time}')
+                        send(f'The {action[0]} trade has been executed at \n {current_time}')
                         log(action[0])
                         
                     elif position <= -1:
@@ -58,7 +58,7 @@ def dataHandler(data):
                 json.dump({'positions': position}, pos, indent=4)
                 pos.truncate()
 
-                return f'The trade for {action[0]} has been executed at {current_time}'
+                return f'The trade for {action[0]} has been executed at \n {current_time}'
         except Exception as e:
             print(f"An error occurred: {e}")
             return 'An error occurred while handling the data.'
