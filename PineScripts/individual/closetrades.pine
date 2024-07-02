@@ -1,0 +1,34 @@
+//@version=5
+indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
+
+// Input variables
+ema1 = input.int(34, minval=1, maxval=300, title="EMA UpTrend")
+shema = input.bool(true, title="Show EMA Trend is Based On?")
+
+// Inputs
+len = input.int(125, minval=1, title="Length")
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
+
+// Calculate the EMA
+out = ta.ema(src, len)
+plot(out, title="EMA", color=color.blue, offset=offset)
+
+
+// Determine the trend direction
+var bool up = na
+
+if (ta.crossover((out),close))
+    up := false
+if (ta.crossunder((out + 0.01),close))
+    up := true
+
+// Calculate EMA
+usedEma = ta.ema(close, ema1)
+
+// Define colors and conditions
+emaUp = ((hlc3 + 0.01) >= usedEma) and (hlc3[1] >= usedEma)
+emaDown = ((hlc3 - 0.01) < usedEma) and (hlc3[1] < usedEma)
+
+plotshape(series=emaUp and up==false, location=location.belowbar, color=#eeff01, style=shape.triangleup,size=size.small, title="Buy Signal")
+plotshape(series=emaDown and up, location=location.belowbar, color=#0011ff, style=shape.triangleup,size=size.small, title="Sell Signal")

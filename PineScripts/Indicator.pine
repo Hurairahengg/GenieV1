@@ -1,36 +1,68 @@
 //@version=5
-indicator(title="Moving Average Exponential", shorttitle="allahuakbar", overlay=true, timeframe="", timeframe_gaps=true)
-len = input.int(250, minval=1, title="Length")
-src = input(close, title="Source")
-offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
-out = ta.ema(src, len)
-plot(out, title="EMA", color=color.blue, offset=offset)
+indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
 
+// Input variables
 ema1 = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
 shema = input.bool(true, title="Show EMA Trend is Based On?")
 
+// Inputs
+len = input.int(75, minval=1, title="Length")
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display=display.data_window)
+
+// Calculate the EMA
+out = ta.ema(src, len)
+plot(out, title="EMA", color=color.blue, offset=offset)
+
+// Determine the trend direction
+var bool up = na
+
+if (ta.crossover((out - 0.01), close))
+    up := false
+if (ta.crossunder((out + 0.01), close))
+    up := true
+
+// Calculate EMA
 usedEma = ta.ema(close, ema1)
 
-distanceThreshold = 0.010 
-emaUp = hlc3 >= usedEma and math.abs(hlc3 - usedEma) >= distanceThreshold
-emaDown = hlc3 < usedEma and math.abs(hlc3 - usedEma) >= distanceThreshold
-var bool isup = na
+// Define colors and conditions
+emaUp = ((hlc3 + 0.010) >= usedEma) and ((hlc3[1]) >= usedEma)
+emaDown = ((hlc3 - 0.010) < usedEma) and ((hlc3[1]) < usedEma)
 
-distance = 0.025
-emaAway = math.abs(out - close) >= distance
+buy = emaUp and up
+sell = emaDown and up == false
+buyClose = emaUp and up == false
+sellClose = emaDown and up
 
-if emaUp
-    isup := true
-if emaDown
-    isup := false
+var int buyF = na
+var int sellF = na
+var int buyCF = na
+var int sellCF = na
 
-// Conditions for buy and sell signals 
-emab = (out < close) and emaAway
-emas = (out >= close) and emaAway
+if buy
+    buyF := na(buyF) ? 1 : buyF + 1
+    sellF := 0
+if sell
+    buyF := 0
+    sellF := na(sellF) ? 1 : sellF + 1
+if buyClose
+    buyCF := na(buyCF) ? 1 : buyCF + 1
+    buyF := 0 // Reset buy count when buyClose happens
+    sellCF := 0
+if sellClose
+    buyCF := 0
+    sellCF := na(sellCF) ? 1 : sellCF + 1
 
-plotshape(series=emab and isup, location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, title="Buy Signal")
-plotshape(series=(emas and (isup == false)), location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, title="Sell Signal")
-plotshape(series=(hlc3 < usedEma) and (out >= close), location=location.belowbar, color=#ffe600, style=shape.triangleup, size=size.small, title="Buy close")
-plotshape(series=(hlc3 >= usedEma) and (out < close), location=location.abovebar, color=color.new(#001aff, 0), style=shape.triangledown, size=size.small, title="Sell close")
+// Debugging plots
+plot(buyF, title="Buy Count", color=color.green, linewidth=1)
+plot(buyCF, title="Buy Close Count", color=color.red, linewidth=1)
 
+plotshape(series=(buyF == 1), location=location.belowbar, color=color.new(#90ff82, 0), style=shape.triangleup, size=size.small, title="Buy Signal")
+plotshape(series=(sellF == 1), location=location.belowbar, color=color.new(#f75757, 0), style=shape.triangleup, size=size.small, title="Sell Signal")
+plotshape(series=(buyCF == 1), location=location.abovebar, color=#f7ff8a, style=shape.triangledown, size=size.small, title="Sell close Signal")
+plotshape(series=(sellCF == 1), location=location.abovebar, color=#4955ff, style=shape.triangledown, size=size.small, title="Buy close Signal")
 
+alertcondition(condition=buy, title='buy', message='buy')
+alertcondition(condition=sell, title='sell', message='sell')
+alertcondition(condition=buyClose, title='buy close', message='sell')
+alertcondition(condition=sellClose, title='sell close', message='buy')

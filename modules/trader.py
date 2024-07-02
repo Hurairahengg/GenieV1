@@ -23,9 +23,11 @@ class actions:
 def trade(action):
     if action == 'buy':
         actions.buy()
+        return 'ok'
 
     elif action == 'sell':
         actions.sell()
+        return 'ok'
 
     else:
         pass

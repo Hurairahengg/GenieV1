@@ -21,7 +21,6 @@ def dataHandler(data):
                         trade(action[0])
                         position += cntpos
                         send(f'The {action[0]} trade has been executed at {current_time}')
-                        log(action[0])
 
                     elif position < 0:
                         for x in range(abs(position)):
@@ -30,7 +29,6 @@ def dataHandler(data):
                         trade(action[0])
                         position += cntpos
                         send(f'The {action[0]} trade has been executed at {current_time}')
-                        log(action[0])
 
                     elif position >= 1:
                         pass
@@ -40,7 +38,6 @@ def dataHandler(data):
                         trade(action[0])
                         position -= cntpos
                         send(f'The {action[0]} trade has been executed at {current_time}')
-                        log(action[0])
 
                     elif position > 0:
                         for x in range(position):
@@ -49,7 +46,6 @@ def dataHandler(data):
                         trade(action[0])
                         position -= cntpos
                         send(f'The {action[0]} trade has been executed at {current_time}')
-                        log(action[0])
                         
                     elif position <= -1:
                         pass
@@ -58,7 +54,8 @@ def dataHandler(data):
                 json.dump({'positions': position}, pos, indent=4)
                 pos.truncate()
 
-                return f'The trade for {action[0]} has been executed at {current_time}'
+                log_time = log(action[0])
+                return f'The trade for {action[0]} has been executed at {log_time}'
         except Exception as e:
             print(f"An error occurred: {e}")
             return 'An error occurred while handling the data.'
