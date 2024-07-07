@@ -53,6 +53,8 @@ def dataHandler(data):
                         
                     elif position <= -1:
                         pass
+                if action[0] == 'bclose':
+                    return 'Closing all positions...'
 
                 pos.seek(0)
                 json.dump({'positions': position}, pos, indent=4)

@@ -1,34 +1,50 @@
 //@version=5
-indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
+indicator("CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
 
-// Input variables
-ema1 = input.int(34, minval=1, maxval=300, title="EMA UpTrend")
+sesd_ses = input.session('2100-0600')
+tz_incr = input.int(0)
+use_exchange = input(false)
+tf = timeframe.period
+tz = use_exchange ? syminfo.timezone : str.format('UTC{0}{1}', tz_incr >= 0 ? '+' : '-', math.abs(tz_incr))
+syd = time(tf, sesd_ses, tz) != 0
+
+// Input parameters
+cmaup = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
 shema = input.bool(true, title="Show EMA Trend is Based On?")
 
-// Inputs
-len = input.int(125, minval=1, title="Length")
+length = 3 
+atr = ta.rma(ta.tr(true), length) 
+
+len = input.int(85, minval=1, title="Length")
 src = input(close, title="Source")
 offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
+out = ta.sma(src, len)
 
 // Calculate the EMA
-out = ta.ema(src, len)
-plot(out, title="EMA", color=color.blue, offset=offset)
+usedEma = ta.ema(close, cmaup)
 
+// Define colors based on EMA trend, ignoring antennas
+bodyUp = close >= usedEma and open >= usedEma
+bodyDown = close < usedEma and open < usedEma
 
-// Determine the trend direction
-var bool up = na
+emaup = out < close
+emadown = out > close
 
-if (ta.crossover((out),close))
-    up := false
-if (ta.crossunder((out + 0.01),close))
-    up := true
+var int yesuc = 0
+var int yesdc = 0
 
-// Calculate EMA
-usedEma = ta.ema(close, ema1)
+atrMain = atr > 0.015
 
-// Define colors and conditions
-emaUp = ((hlc3 + 0.01) >= usedEma) and (hlc3[1] >= usedEma)
-emaDown = ((hlc3 - 0.01) < usedEma) and (hlc3[1] < usedEma)
+if (emaup and bodyDown and not syd)
+    yesuc := yesuc + 1
+    yesdc := 0
+else if (emadown and bodyUp and not syd)
+    yesdc := yesdc + 1
+    yesuc := 0
+else 
+    yesuc := 0
+    yesdc := 0
 
-plotshape(series=emaUp and up==false, location=location.belowbar, color=#eeff01, style=shape.triangleup,size=size.small, title="Buy Signal")
-plotshape(series=emaDown and up, location=location.belowbar, color=#0011ff, style=shape.triangleup,size=size.small, title="Sell Signal")
+// Plotting triangles for buy and sell signals
+plotshape(series=(yesuc == 1), location=location.belowbar, color=#2b3ac4, style=shape.triangleup, size=size.small, title="Buy Signal")
+plotshape(series=(yesdc == 1), location=location.abovebar, color=#fbff00, style=shape.triangledown, size=size.small, title="Sell Signal")

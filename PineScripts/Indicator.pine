@@ -1,15 +1,52 @@
-//Created by ChrisMoody on 11/1/2014
-//Bar Color Based on Above/Below EMA...
-study(title = "CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars",overlay=true)
-ema1 = input(34, minval=1, maxval=300, title="EMA UpTrend")
-shema = input(true, title="Show EMA Trend is Based On?")
+//@version=5
+indicator("CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
 
-usedEma = ema(close, ema1)
+sesd_ses = input.session('2100-0600')
+tz_incr = input.int(0)
+use_exchange = input(false)
+tf = timeframe.period
+tz = use_exchange ? syminfo.timezone : str.format('UTC{0}{1}', tz_incr >= 0 ? '+' : '-', math.abs(tz_incr))
+syd = time(tf, sesd_ses, tz) != 0
 
-emaUpColor() => hlc3 >= usedEma
-emaDownColor() => hlc3  < usedEma
+bgcolor(syd ? color.new(color.yellow, 90) : na)
 
-col = hlc3  >= usedEma ? lime : hlc3  < usedEma ? red : white
+// Input parameters
+cmaup = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
+shema = input.bool(true, title="Show EMA Trend is Based On?")
 
-barcolor(emaUpColor() ? lime: emaDownColor() ? red : na)
-plot(shema and usedEma ? usedEma : na, title="EMA", style=line, linewidth=3, color=col)
+length = 3 
+atr = ta.rma(ta.tr(true), length) 
+
+len = input.int(80, minval=1, title="Length")
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
+out = ta.sma(src, len)
+
+// Calculate the EMA
+usedEma = ta.ema(close, cmaup)
+
+// Define colors based on EMA trend, ignoring antennas
+bodyUp = close >= usedEma and open >= usedEma
+bodyDown = close < usedEma and open < usedEma
+
+emaupMain = (out + 0.010) < close
+emadownMain = (out - 0.010) > close
+
+atrMain = atr > 0.015
+
+var int yesup = 0
+var int yesdown = 0
+
+if (emaupMain and bodyUp and atrMain and not syd)
+    yesup := yesup + 1
+    yesdown := 0
+else if (emadownMain and bodyDown and atrMain and not syd)
+    yesdown := yesdown + 1
+    yesup := 0
+else 
+    yesup := 0
+    yesdown := 0
+
+// Plotting triangles for buy and sell signals
+plotshape(series=(yesup == 1), location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small, title="Buy Signal")
+plotshape(series=(yesdown == 1), location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small, title="Sell Signal")
