@@ -1,5 +1,14 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © jinni-main
+
 //@version=5
-indicator("CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
+indicator(title = "Jinni v1", shorttitle="Jinni", overlay=true)
+ema1 = input(36,title="EMA UpTrend")
+shema = input(true, title="Show EMA Trend is Based On?")
+
+length = input.int(title="Length", defval=5, minval=1)
+atr = ta.rma(ta.tr(true), length) > 0.0075
+
 
 sesd_ses = input.session('2100-0600')
 tz_incr = input.int(0)
@@ -8,43 +17,23 @@ tf = timeframe.period
 tz = use_exchange ? syminfo.timezone : str.format('UTC{0}{1}', tz_incr >= 0 ? '+' : '-', math.abs(tz_incr))
 syd = time(tf, sesd_ses, tz) != 0
 
-// Input parameters
-cmaup = input.int(36, minval=1, maxval=300, title="EMA UpTrend")
-shema = input.bool(true, title="Show EMA Trend is Based On?")
+usedEma = ta.ema(close, ema1)
 
-length = 3 
-atr = ta.rma(ta.tr(true), length) 
+cmUp = (close >= usedEma) and ((close[1] >= usedEma) and (close > close[1])) and (open >= usedEma) and not syd and atr 
+cmDown = (close < usedEma) and (close[1] < usedEma and (close < close[1])) and (open < usedEma) and not syd and atr
+var bool cmuflg = na
+var bool cmdowflg = na
 
-len = input.int(85, minval=1, title="Length")
-src = input(close, title="Source")
-offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display = display.data_window)
-out = ta.sma(src, len)
+if cmUp
+    cmuflg := true
+    cmDown := false
+if cmDown
+    cmdowflg := true
+    cmuflg := false
 
-// Calculate the EMA
-usedEma = ta.ema(close, cmaup)
+plotshape(series=cmuflg, location=location.belowbar, color=color.green, style=shape.circle, size=size.small)
+plotshape(series=cmdowflg, location=location.abovebar, color=color.red, style=shape.circle, size=size.small)
 
-// Define colors based on EMA trend, ignoring antennas
-bodyUp = close >= usedEma and open >= usedEma
-bodyDown = close < usedEma and open < usedEma
+barcolor(cmuflg ? color.blue : na)
+barcolor(cmdowflg ? color.yellow : na)
 
-emaup = out < close
-emadown = out > close
-
-var int yesuc = 0
-var int yesdc = 0
-
-atrMain = atr > 0.015
-
-if (emaup and bodyDown and not syd)
-    yesuc := yesuc + 1
-    yesdc := 0
-else if (emadown and bodyUp and not syd)
-    yesdc := yesdc + 1
-    yesuc := 0
-else 
-    yesuc := 0
-    yesdc := 0
-
-// Plotting triangles for buy and sell signals
-plotshape(series=(yesuc == 1), location=location.belowbar, color=#2b3ac4, style=shape.triangleup, size=size.small, title="Buy Signal")
-plotshape(series=(yesdc == 1), location=location.abovebar, color=#fbff00, style=shape.triangledown, size=size.small, title="Sell Signal")
