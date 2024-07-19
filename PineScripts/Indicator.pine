@@ -3,55 +3,81 @@
 
 //@version=5
 indicator(title = "Jinni v1", shorttitle="Jinni", overlay=true)
-ema1 = input(36,title="EMA UpTrend")
-shema = input(true, title="Show EMA Trend is Based On?")
+sesd_ses = input.session('2100-0600', 'Sydney Session')
+sesd_css = input.color(#ffeb3b, 'Sydney Color')
+bg_transp = input.float(90, 'Transparency')
 
-length = input.int(title="Length", defval=5, minval=1)
-atr = ta.rma(ta.tr(true), length) > 0.0075
-
-len = input.int(75, minval=1, title="Length")
-src = input(close, title="Source")
-offset = input.int(title="Offset", defval=0, minval=-500, maxval=500, display=display.data_window)
-ema = ta.ema(src, len)
-
-sesd_ses = input.session('2100-0600')
-tz_incr = input.int(0)
-use_exchange = input(false)
-tf = timeframe.period
-tz = use_exchange ? syminfo.timezone : str.format('UTC{0}{1}', tz_incr >= 0 ? '+' : '-', math.abs(tz_incr))
-syd = time(tf, sesd_ses, tz) != 0
+ema1 = input.int(34, minval=1, maxval=300, title="EMA UpTrend")
+shema = input.bool(true, title="Show EMA Trend is Based On?")
 
 usedEma = ta.ema(close, ema1)
 
-emaU = ema < close and ema < open
-emaD = ema >= close and ema >= open
+len = input.int(65, minval=1)
+src = input(close)
+emaValue = ta.ema(src, len)
 
-cmUp = (close >= usedEma) and ((close[1] >= usedEma) and (close > close[1])) and (open >= usedEma) and not syd and atr and emaU 
-cmDown = (close < usedEma) and (close[1] < usedEma and (close < close[1])) and (open < usedEma) and not syd and atr and emaD
-
-cmUclose = (close < usedEma) and (close[1] < usedEma) and not syd and emaU
-cmDclose = (close >= usedEma) and ((close[1] >= usedEma)) and emaD and not syd
-
-var bool cmuflg = na
-var bool cmdowflg = na
-
-if cmUp
-    cmuflg := true
-    cmDown := false
-else if cmDown
-    cmdowflg := true
-    cmuflg := false
-else if syd
-    cmuflg := false
-    cmdowflg := false
-else 
-    cmuflg := false
-    cmdowflg := false
+tz = 'UTC+0'
+is_sesd = time(timeframe.period, sesd_ses, tz) != 0
+extended_sesd = time(timeframe.period, '2100-0720', tz) != 0 // Extended by 1 hour and 20 minutes
+friday = (dayofweek == dayofweek.friday)
+stratime = time(timeframe.period, '1830-2100', tz) != 0
 
 
+var box bx = na
+var label lbl = na
+var t = 0
+var max = high
+var min = low
 
-plotshape(series=cmuflg and not cmUclose, location=location.belowbar, color=#15ff00, style=shape.triangleup, size=size.small, title="Buy Signal")
-plotshape(series=cmdowflg and not cmDclose, location=location.abovebar, color=#ff9a3b, style=shape.triangledown, size=size.small, title="Sell Signal")
+if not extended_sesd[1] and extended_sesd
+    t := time
+    max := high
+    min := low
+    bx := box.new(bar_index, max, bar_index, min, bgcolor = color.new(sesd_css, bg_transp), border_color = sesd_css)
+    lbl := label.new(t, max, 'Sydney', xloc = xloc.bar_time, textcolor = sesd_css, style = label.style_label_down, color = color.new(color.white, 100), size = size.tiny)
 
-plotshape(series=cmUclose, location=location.belowbar, color=color.blue, style=shape.triangleup, size=size.small, title="Buy Signal")
-plotshape(series=cmDclose, location=location.abovebar, color=color.yellow, style=shape.triangledown, size=size.small, title="Sell Signal")
+if extended_sesd
+    max := math.max(high, max)
+    min := math.min(low, min)
+    box.set_top(bx, max)
+    box.set_rightbottom(bx, bar_index, min)
+    label.set_xy(lbl, int(math.avg(t, time)), max)
+
+plotshape(is_sesd and not extended_sesd[1], location = location.bottom, color = sesd_css, style = shape.square, size = size.tiny)
+plotshape(not extended_sesd and extended_sesd[1], location = location.bottom, color = sesd_css, style = shape.square, size = size.tiny)
+plotshape(friday, location = location.top, color = color.red, style = shape.labeldown, text = "")
+syd = extended_sesd
+
+bad = (extended_sesd)
+badbadbad = stratime
+
+var bool upC = na
+var bool downC = na
+
+uptrend = src >= emaValue
+downtrend = src < emaValue
+
+upull = (close - open) >= 0.0055
+downpull = (open - close) >= 0.0055
+
+cmaup = close >= usedEma and open >= usedEma 
+cmadown = close < usedEma and open < usedEma 
+
+Up = cmaup and not bad and not badbadbad and upull and uptrend
+Down = cmadown and not bad and not badbadbad and downpull and downtrend
+
+upClose = cmadown and  upull and uptrend
+downClose = cmaup and downpull and downtrend
+
+
+if Up
+    upC := true
+    downC := false 
+if Down 
+    downC := true
+    upC := false
+
+plotshape(series=(Up), location=location.belowbar, color=#15ff00, style=shape.circle,size=size.tiny, title="Buy Signal")
+plotshape(series=(Down), location=location.abovebar, color=color.new(#ff6600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
+plotshape(series=(Up), location=location.belowbar, color=#15ff00, style=shape.circle,size=size.tiny, title="Buy Signal")
+plotshape(series=(Down), location=location.abovebar, color=color.new(#ff6600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")

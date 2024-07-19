@@ -1,16 +1,14 @@
 //@version=5
 indicator(title="CM_EMA Trend Bars", shorttitle="CM_EMA TrendBars", overlay=true)
 
-// Input variables
 ema1 = input.int(34, minval=1, maxval=300, title="EMA UpTrend")
 shema = input.bool(true, title="Show EMA Trend is Based On?")
 
-// Calculate EMA
 usedEma = ta.ema(close, ema1)
 
-// Define colors and conditions
-emaUpColor = hlc3 >= usedEma
-emaDownColor = hlc3 < usedEma
 
-plotshape(series=up and up[1], location=location.belowbar, color=color.green, style=shape.triangleup,size=size.small, title="Buy Signal")
-plotshape(series=(up == false) and (up[1] == false), location=location.abovebar, color=color.red, style=shape.triangledown,size=size.small, title="Sell Signal")
+emaUp = close >= usedEma and open >= usedEma and close[1] >= usedEma and open[1] >= usedEma
+emaDown = close < usedEma and open < usedEma and close[1] < usedEma and open[1] < usedEma 
+
+plotshape(series=emaUp, location=location.belowbar, color=color.green, style=shape.triangleup,size=size.small, title="Buy Signal")
+plotshape(series=emaDown, location=location.abovebar, color=color.red, style=shape.triangledown,size=size.small, title="Sell Signal")
