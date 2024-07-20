@@ -53,6 +53,8 @@ badbadbad = stratime
 
 var bool upC = na
 var bool downC = na
+var bool upf = na
+var bool downf = na
 
 uptrend = src >= emaValue
 downtrend = src < emaValue
@@ -69,15 +71,25 @@ Down = cmadown and not bad and not badbadbad and downpull and downtrend
 upClose = cmadown and  upull and uptrend
 downClose = cmaup and downpull and downtrend
 
-
 if Up
+    upf := true
+    downf := false 
+if Down 
+    downf := true
+    upf := false
+
+if upClose and upf[1]
     upC := true
     downC := false 
-if Down 
+if downClose and downf[1]
     downC := true
     upC := false
+if (Up or Down)
+    upC := false
+    downC := false 
+
 
 plotshape(series=(Up), location=location.belowbar, color=#15ff00, style=shape.circle,size=size.tiny, title="Buy Signal")
 plotshape(series=(Down), location=location.abovebar, color=color.new(#ff6600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
-plotshape(series=(Up), location=location.belowbar, color=#15ff00, style=shape.circle,size=size.tiny, title="Buy Signal")
-plotshape(series=(Down), location=location.abovebar, color=color.new(#ff6600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
+plotshape(series=upC and not badbadbad, location=location.belowbar, color=#0084ff, style=shape.circle,size=size.tiny, title="Buy Signal")
+plotshape(series=downC and not badbadbad, location=location.abovebar, color=color.new(#ffe600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
