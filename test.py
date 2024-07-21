@@ -1,4 +1,3 @@
-from modules import start
-
-if __name__ == "__main__":
-    start.main()
+import pyautogui
+while True:
+    print(pyautogui.position())

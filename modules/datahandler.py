@@ -8,7 +8,7 @@ from modules.sendMessage import send
 def dataHandler(data):
     if data is not None:
         action = data.split()
-        cntpos = 1 if action[0] in ['buy', 'sell'] else 0
+        cntpos = 1 if action[0] in ['buy', 'sell', 'bclose'] else 0
         current_time = datetime.now().strftime("%d %H:%M")
         
         try:
@@ -32,7 +32,7 @@ def dataHandler(data):
                         send(f'The {action[0]} trade has been executed at \n {current_time}')
                         log(action[0])
 
-                    elif position >= 1:
+                    elif position > 0:
                         pass
 
                 elif action[0] == 'sell':
@@ -51,16 +51,29 @@ def dataHandler(data):
                         send(f'The {action[0]} trade has been executed at \n {current_time}')
                         log(action[0])
                         
-                    elif position <= -1:
+                    elif position < 0:
                         pass
-                if action[0] == 'bclose':
-                    return 'Closing all positions...'
+                    
+                elif action[0] == 'uclose':
+                    for i in range(position):
+                        trade('sell')
+                        position -= cntpos
+                    send(f'The long positions has been closed at \n {current_time}')
+                    log(action[0])
+                    return 'Closing long positions...'
+                
+                elif action[0] == 'dclose':
+                    for i in range(abs(position)):
+                        trade('buy')
+                        position += cntpos
+                    send(f'The long positions has been closed at \n {current_time}')
+                    log(action[0])
+                    return 'Closing short positions...'
 
                 pos.seek(0)
                 json.dump({'positions': position}, pos, indent=4)
                 pos.truncate()
 
-                return f'The trade for {action[0]} has been executed at \n {current_time}'
         except Exception as e:
             print(f"An error occurred: {e}")
             return 'An error occurred while handling the data.'

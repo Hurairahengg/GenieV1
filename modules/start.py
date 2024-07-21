@@ -86,75 +86,18 @@ def print_market_status(status_text):
     left_padding = (screen_width - len(status_text)) // 2
     print(f"{' ' * left_padding}{status_text}")
 
-def print_square_box(text1, text2, text3, text4):
+def print_square_box(text1, text2, text3, text4, text5, text6):
     box_width = 30
     terminal_size = shutil.get_terminal_size((80, 20))
     screen_width = terminal_size.columns
-    left_padding = (screen_width - 2 * box_width - 4) // 2
+    left_padding = (screen_width - box_width) // 2
 
-    print(f"{' ' * left_padding}+{'-' * (box_width - 2)}+{' ' * 4}+{'-' * (box_width - 2)}+")
-    print(f"{' ' * left_padding}| {text1:<{box_width - 4}} |{' ' * 4}| Yesterday Profit:    ¥100  |")
-    print(f"{' ' * left_padding}| {text2:<{box_width - 4}} |{' ' * 4}| Today's Profit EST:  ¥150  |")
-    print(f"{' ' * left_padding}| {text3:<{box_width - 4}} |{' ' * 4}| Money until goal:    ¥1000 |")
-    print(f"{' ' * left_padding}| {text4:<{box_width - 4}} |{' ' * 4}| Est time until goal: 10d   |")
-    print(f"{' ' * left_padding}+{'-' * (box_width - 2)}+{' ' * 4}+{'-' * (box_width - 2)}+")
+    print(f"{' ' * left_padding}+{'-' * (box_width - 2)}+")
+    print(f"{' ' * left_padding}| {text1:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}| {text2:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}| {text3:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}| {text4:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}| {text5:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}| {text6:<{box_width - 4}} |")
+    print(f"{' ' * left_padding}+{'-' * (box_width - 2)}+")
 
-def main():
-    correct_password = "pgsp3007"
-    password_attempts = 3
-
-    for _ in range(password_attempts):
-        password = getpass.getpass(prompt="Enter the password to proceed: ")
-        if password == correct_password:
-            print("Password accepted.")
-            break
-        else:
-            print("Incorrect password. Try again.")
-    else:
-        print("Maximum password attempts exceeded. Exiting.")
-        return
-
-    clear_screen()
-    print_main_screen(first_time=True)
-    init(text='Starting system')
-    init(text="Checking internet connectivity")
-    check_internet()
-    print(' Done.')
-    sleep(3)
-    with open('data/position.json', 'r') as file:
-        data = json.load(file)
-        position = data.get('positions', None)
-    starting_capital = 10000
-    current_capital = 10000
-    today_profit = 0
-    previous_position = position
-    previous_current_capital = current_capital
-    previous_today_profit = today_profit
-    previous_market_status = "" 
-
-    while True:
-        with open('data/position.json', 'r') as file:
-            data = json.load(file)
-            position = data.get('positions', None)
-        current_capital = 50
-        today_profit = 50
-        market_status = get_market_status_text()
-
-        if (position != previous_position or 
-            current_capital != previous_current_capital or 
-            today_profit != previous_today_profit or 
-            market_status != previous_market_status):
-            
-            clear_screen()
-            print_main_screen(first_time=False)
-            print_square_box(f"Trades Open: {position}",
-                             f"Starting Capital: ¥{starting_capital}",
-                             f"Current Capital: ¥{current_capital}",
-                             f"Today Profit: ¥{today_profit}")
-            print_market_status(market_status)
-            previous_position = position
-            previous_current_capital = current_capital
-            previous_today_profit = today_profit
-            previous_market_status = market_status
-
-        sleep(1)

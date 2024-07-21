@@ -28,6 +28,6 @@ def trade(action):
     elif action == 'sell':
         actions.sell()
         return 'ok'
-
+    
     else:
         pass
