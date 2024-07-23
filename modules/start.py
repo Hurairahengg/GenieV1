@@ -13,7 +13,7 @@ def clear_screen():
 def init(text):
     print("\n", text, end="", flush=True)
     for i in range(3):
-        sleep(1)
+
         print(".", end="", flush=True)
     print()
 
@@ -30,8 +30,8 @@ def check_internet():
 def print_main_screen(first_time=True):
     if first_time:
         clear_screen()
-        sleep(1)
         lines = [
+            "                                                                                                                               "
             "                                                                                                                               ",
             "            ||||||||||| ||||||||||    |||     ||   ||||    || |||||||||||       |||     |||  ||||||||        |||        |||||||",
             "               |+|         |+|      |+|+|   |+|  |+|+|   |+|     |+|           |+|     |+| |+|    |+|     |+|+|       |+|   |+|",

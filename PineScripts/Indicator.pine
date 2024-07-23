@@ -68,8 +68,8 @@ cmadown = close < usedEma and open < usedEma
 Up = cmaup and not bad and not badbadbad and upull and uptrend
 Down = cmadown and not bad and not badbadbad and downpull and downtrend
 
-upClose = cmadown and  upull and uptrend
-downClose = cmaup and downpull and downtrend
+upClose = cmadown     
+downClose = cmaup    
 
 if Up
     upf := true
@@ -78,10 +78,10 @@ if Down
     downf := true
     upf := false
 
-if upClose and upf[1]
+if (upClose and not upf)
     upC := true
     downC := false 
-if downClose and downf[1]
+if (downClose and not downf)
     downC := true
     upC := false
 if (Up or Down)
