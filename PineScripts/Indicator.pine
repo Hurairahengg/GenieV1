@@ -18,10 +18,9 @@ emaValue = ta.ema(src, len)
 
 tz = 'UTC+0'
 is_sesd = time(timeframe.period, sesd_ses, tz) != 0
-extended_sesd = time(timeframe.period, '2100-0720', tz) != 0 // Extended by 1 hour and 20 minutes
+extended_sesd = time(timeframe.period, '2100-0655', tz) != 0 // Extended by 55 minutes
 friday = (dayofweek == dayofweek.friday)
 stratime = time(timeframe.period, '1830-2100', tz) != 0
-
 
 var box bx = na
 var label lbl = na
@@ -59,8 +58,8 @@ var bool downf = na
 uptrend = src >= emaValue
 downtrend = src < emaValue
 
-upull = (close - open) >= 0.0055
-downpull = (open - close) >= 0.0055
+upull = (close - open) >= 0.0025
+downpull = (open - close) >= 0.0025
 
 cmaup = close >= usedEma and open >= usedEma 
 cmadown = close < usedEma and open < usedEma 
@@ -78,18 +77,22 @@ if Down
     downf := true
     upf := false
 
-if (upClose and not upf)
+if (upClose and not downf)
     upC := true
     downC := false 
-if (downClose and not downf)
+if (downClose and not upf)
     downC := true
     upC := false
 if (Up or Down)
     upC := false
     downC := false 
 
-
 plotshape(series=(Up), location=location.belowbar, color=#15ff00, style=shape.circle,size=size.tiny, title="Buy Signal")
 plotshape(series=(Down), location=location.abovebar, color=color.new(#ff6600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
 plotshape(series=upC and not badbadbad, location=location.belowbar, color=#0084ff, style=shape.circle,size=size.tiny, title="Buy Signal")
 plotshape(series=downC and not badbadbad, location=location.abovebar, color=color.new(#ffe600, 0), style=shape.circle,size=size.tiny, title="Sell Signal")
+
+alertcondition(Up, title="Buy Signal", message="Buy Signal")
+alertcondition(Down, title="Sell Signal", message="Sell Signal")
+alertcondition(upC and not badbadbad, title="Buy Signal Condition", message="Buy Signal Condition Met")
+alertcondition(downC and not badbadbad, title="Sell Signal Condition", message="Sell Signal Condition Met")
