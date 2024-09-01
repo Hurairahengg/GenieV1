@@ -23,7 +23,7 @@ def main():
         else:
             print("Incorrect password. Try again.")
     else:
-        print("Maximum password attempts exceeded. Exiting.")
+        print("Maximum password attempts exceeded. Exiting.S")
         return
 
     start.clear_screen()

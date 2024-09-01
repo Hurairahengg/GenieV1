@@ -1,51 +1,33 @@
-import time
-import win32gui
-import win32con
-import win32clipboard as clipboard
+import yfinance as yf
+import pandas as pd
+from datetime import datetime, timedelta
 
-def get_mt4_journal_entries():
-    hwnd = win32gui.FindWindow(None, "22665629: Forex.comJP-Demo 104 - StoneX Financial Co., Ltd. - USDZAR,M1")  # Adjust this if your MT4 window has a different title
-    if hwnd == 0:
-        print("MetaTrader 4 window not found!")
-        return ""
+def download_market_data(symbol, start_datetime, end_datetime, interval, output_file):
+    try:
+        # Adjust end datetime for the interval to ensure we get data until the end time
+        adjusted_end_datetime = end_datetime + timedelta(minutes=int(interval[:-1]))
 
-    # Set the MT4 window to the foreground
-    win32gui.SetForegroundWindow(hwnd)
-    time.sleep(1)  # Wait for the window to come to the foreground
-
-    # Open the Terminal window with Ctrl + T
-    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_CONTROL, 0)
-    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, ord('T'), 0)
-    time.sleep(1)
-
-    # Send Ctrl + A to select all text in the Journal
-    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_CONTROL, 0)
-    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, ord('A'), 0)
-    time.sleep(1)
-
-    # Send Ctrl + C to copy the selected text
-    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, ord('C'), 0)
-    win32gui.SendMessage(hwnd, win32con.WM_KEYUP, ord('C'), 0)
-    time.sleep(1)
-
-    # Retrieve the copied text from the clipboard
-    clipboard.OpenClipboard()
-    journal_text = clipboard.GetClipboardData(win32con.CF_TEXT).decode('utf-8')
-    clipboard.CloseClipboard()
-
-    return journal_text
-
-def main():
-    last_entry = ""
-    while True:
-        journal_text = get_mt4_journal_entries()
-        if journal_text:
-            lines = journal_text.strip().split("\r\n")
-            new_entry = lines[-1]
-            if new_entry != last_entry:
-                print(new_entry)
-                last_entry = new_entry
-        time.sleep(5)
+        # Download the market data
+        data = yf.download(symbol, start=start_datetime, end=adjusted_end_datetime, interval=interval)
+        
+        if data.empty:
+            print(f"No data found for {symbol} from {start_datetime} to {end_datetime} with interval {interval}")
+        else:
+            # Filter data to the exact time range
+            data = data.between_time(start_datetime.time(), end_datetime.time())
+            # Save the data to a CSV file
+            data.to_csv(output_file)
+            print(f"Market data for {symbol} from {start_datetime} to {end_datetime} saved to {output_file}")
+    except Exception as e:
+        print(f"Failed to download data for {symbol}: {e}")
 
 if __name__ == "__main__":
-    main()
+    # Constants
+    symbol = 'MXN=X'
+    start_datetime = datetime(2024, 7, 26, 14, 10)  # 2024-07-15 4:00 PM
+    end_datetime = datetime(2024, 7, 26, 20, 50)    # 2024-07-15 6:45 PM
+    interval = '5m'
+    output_file = 'market_data.csv'
+    
+    # Download the market data and save to CSV
+    download_market_data(symbol, start_datetime, end_datetime, interval, output_file)
